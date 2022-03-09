@@ -97,6 +97,24 @@ local -ra rainbow_right=(
   '%3F$right_head%K{3} %0F$prefixes[2]5s $extra_icons[4]%3F${time:+%7F$right_sep%K{7\} %0F$prefixes[3]$time $extra_icons[5]%7F}%k$right_tail%f' '%$frame_color[$color]F─╮%f'
   '' '%$frame_color[$color]F─╯%f'
 )
+local style_list=('lean' 'lean_8colors' 'classic' 'pure' 'rainbow')
+# local -ra sub_1_left=(  # left 2, 4
+#   '${extra_icons[1]:+%f$extra_icons[1] }%31F$extra_icons[2]%B%39F~%b%31F/%B%39Fsrc%b%f $prefixes[1]%76F$extra_icons[3]master%f ' '%76F$prompt_char%f ${buffer:-$cursor}'
+#   '${extra_icons[1]:+%f$extra_icons[1] }%4F$extra_icons[2]%4F~/src%f $prefixes[1]%2F$extra_icons[3]master%f ' '%2F$prompt_char%f ${buffer:-$cursor}'
+#   '%F{$bg_color[$color]}$left_tail%K{$bg_color[$color]} ${extra_icons[1]:+%255F$extra_icons[1] %$sep_color[$color]F$left_subsep%f }%31F$extra_icons[2]%B%39F~%b%K{$bg_color[$color]}%31F/%B%39Fsrc%b%K{$bg_color[$color]} %$sep_color[$color]F$left_subsep%f %$prefix_color[$color]F$prefixes[1]%76F$extra_icons[3]master %k%$bg_color[$color]F$left_head%f' '%f ${buffer:-$cursor}'
+#   '%F{$pure_color[blue]}~/src%f %F{$pure_color[grey]}master%f ${pure_use_rprompt-%F{$pure_color[yellow]\}5s%f }' '%F{$pure_color[magenta]}$prompt_char%f ${buffer:-$cursor}'
+#   '%F{${${extra_icons[1]:+7}:-4}}$left_tail${extra_icons[1]:+%K{7\}%232F $extra_icons[1] %K{4\}%7F$left_sep}%K{4}%254F $extra_icons[2]%B%255F~%b%K{4}%254F/%B%255Fsrc%b%K{4} %K{2}%4F$left_sep %0F$prefixes[1]$extra_icons[3]master %k%2F$left_head%f' '%f ${buffer:-$cursor}'
+#   '' ''
+# )
+
+# local -ra sub_1_right(  # right: 1, 3
+#   ' $prefixes[2]%101F$extra_icons[4]5s%f${time:+ $prefixes[3]%66F$extra_icons[5]$time%f}' ' %$frame_color[$color]F─╮%f' ' %$frame_color[$color]F─╯%f'
+#   ' $prefixes[2]%3F$extra_icons[4]5s%f${time:+ $prefixes[3]%6F$extra_icons[5]$time%f}' ' %$frame_color[$color]F─╮%f' ' %$frame_color[$color]F─╯%f'
+#   '%$bg_color[$color]F$right_head%K{$bg_color[$color]}%f %$prefix_color[$color]F$prefixes[2]%101F5s $extra_icons[4]${time:+%$sep_color[$color]F$right_subsep %$prefix_color[$color]F$prefixes[3]%66F$time $extra_icons[5]}%k%F{$bg_color[$color]}$right_tail%f' '%$frame_color[$color]F─╮%f' '%$frame_color[$color]F─╯%f'
+#   '${pure_use_rprompt+%F{$pure_color[yellow]\}5s%f${time:+ }}${time:+%F{$pure_color[grey]\}$time%f}' ''
+#   '%3F$right_head%K{3} %0F$prefixes[2]5s $extra_icons[4]%3F${time:+%7F$right_sep%K{7\} %0F$prefixes[3]$time $extra_icons[5]%7F}%k$right_tail%f' '%$frame_color[$color]F─╮%f' '%$frame_color[$color]F─╯%f'
+#   '' ''
+# )
 
 function prompt_length() {
   local -i COLUMNS=1024
@@ -121,6 +139,28 @@ function print_prompt() {
 
   local left=${style}_left
   local right=${style}_right
+  # if "$alt_prompt" -gt 0; then
+  #   local alt_left=sub_${alt_prompt}_left
+  #   local alt_right=sub_${alt_prompt}_right
+  #   local style_num=1
+  #   local ea
+  #   for ea in "${style_list[@]}"; do
+  #     [ "$ea" = "$style" ] && break;
+  #     style_num=((style_num + 2));
+  #   done
+  #   if "$style_num" -lt ((${#style_list[@]} * 2)); then
+  #     left[2]=${alt_left[$style_num]}
+  #     left[4]=${alt_left[((style_num + 1))]}
+  #     right[1]=${alt_right[$style_num]}
+  #     right[3]=${alt_right[((style_num + 1))]}
+  #   fi
+  #   # case $alt_prompt in
+  #   #   1)  ;;
+  #   #   2)  centered=1;;
+  #   #   3)  centered=0;;
+  #   #   4)  exit 1;;
+  #   # esac
+  # fi
   left=("${(@P)left}")
   right=("${(@P)right}")
   (( disable_rprompt )) && right=()
@@ -1114,6 +1154,9 @@ function ask_extra_icons() {
   branch_icon=${branch_icon// }
   local few=('' '' '' '' '')
   local many=("$os_icon" "$dir_icon " "$vcs_icon $branch_icon " "$duration_icon " "$time_icon ")
+  local noos=(''         "$dir_icon " "$vcs_icon $branch_icon " "$duration_icon " "$time_icon ")
+  local nocl=("$os_icon" "$dir_icon " "$vcs_icon $branch_icon " "$duration_icon " '')
+  local med=(''          "$dir_icon " "$vcs_icon $branch_icon " "$duration_icon " '')
   add_widget 0 flowing -c "%BIcons%b"
   add_widget 0 print
   add_widget 1
@@ -1121,12 +1164,21 @@ function ask_extra_icons() {
   add_prompt "extra_icons=(${(j: :)${(@q)few}})"
   add_widget 0 print -P "%B(2)  Many icons.%b"
   add_prompt "extra_icons=(${(j: :)${(@q)many}})"
+  add_widget 0 print -P "%B(3)  Many, no clock.%b"
+  add_prompt "extra_icons=(${(j: :)${(@q)nocl}})"
+  add_widget 0 print -P "%B(4)  Many, no OS.%b"
+  add_prompt "extra_icons=(${(j: :)${(@q)noos}})"
+  add_widget 0 print -P "%B(5)  Medium (no OS & clock).%b"
+  add_prompt "extra_icons=(${(j: :)${(@q)med}})"
   add_widget 0 print -P "(r)  Restart from the beginning."
-  ask 12r
+  ask 12345r
   case $choice in
     r) return 1;;
     1) extra_icons=("$few[@]"); options+='few icons';;
     2) extra_icons=("$many[@]"); options+='many icons';;
+    3) extra_icons=("$nocl[@]"); options+='many icons, no clock icon';;
+    4) extra_icons=("$noos[@]"); options+='many icons, no OS icon';;
+    5) extra_icons=("$med[@]"); options+='medium icons';;
   esac
   return 0
 }
@@ -1552,6 +1604,30 @@ function ask_config_overwrite() {
   return 0
 }
 
+function ask_alt_prompt() {
+  add_widget 0 flowing -c "%BRAlternative Prompt Elements%b"
+  add_widget 0 print
+  add_widget 1
+  add_widget 0 print -P "%B(0)  Use Default.%b"
+  add_prompt alt_prompt=0
+  add_widget 0 print -P "%B(1)  Use Chris Favs.%b"
+  add_prompt alt_prompt=1
+  # add_widget 0 print -P "%B(2)  Use __ Favs.%b"
+  # add_prompt alt_prompt=2
+  # add_widget 0 print -P "%B(3)  Use __ Favs.%b"
+  # add_prompt alt_prompt=3
+  add_widget 0 print -P "(r)  Restart from the beginning."
+  ask 01r
+  case $choice in
+    r) return 1;;
+    0) alt_prompt=0;;
+    1) alt_prompt=1; options+='alt_prompt_chris';;
+    # 2) alt_prompt=2; options+='alt_prompt_';;
+    # 3) alt_prompt=3; options+='alt_prompt_';;
+  esac
+  return 0
+}
+
 function ask_zshrc_edit() {
   zshrc_content=
   zshrc_backup=
@@ -1630,6 +1706,7 @@ function ask_zshrc_edit() {
   return 0
 }
 
+# Here!
 function generate_config() {
   local base && base="$(<$__p9k_root_dir/config/p10k-${style//_/-}.zsh)" || return
   local lines=("${(@f)base}")
@@ -1645,6 +1722,8 @@ function generate_config() {
   function rep() {
     lines=("${(@)lines//$1/$2}")
   }
+
+  # replace_prompt_elements ?
 
   if [[ $style == pure ]]; then
     rep "local grey=242" "local grey='$pure_color[grey]'"
@@ -1727,7 +1806,19 @@ function generate_config() {
     if [[ -n ${(j::)extra_icons} ]]; then
       local branch_icon=${icons[VCS_BRANCH_ICON]// }
       sub VCS_BRANCH_ICON "'$branch_icon '"
-      uncomment os_icon
+      uncomment os_icon  # cut_icons
+    # elif [[ -n ${(j::)extra_icons} ]]; then
+    #   local branch_icon=${icons[VCS_BRANCH_ICON]// }
+    #   sub VCS_BRANCH_ICON "'$branch_icon '"
+    #   uncomment os_icon
+    # elif [[ -n ${(j::)extra_icons} ]]; then
+    #   local branch_icon=${icons[VCS_BRANCH_ICON]// }
+    #   sub VCS_BRANCH_ICON "'$branch_icon '"
+    #   uncomment os_icon
+    # elif [[ -n ${(j::)extra_icons} ]]; then
+    #   local branch_icon=${icons[VCS_BRANCH_ICON]// }
+    #   sub VCS_BRANCH_ICON "'$branch_icon '"
+    #   uncomment os_icon
     else
       uncomment 'typeset -g POWERLEVEL9K_DIR_CLASSES'
       uncomment 'typeset -g POWERLEVEL9K_VCS_VISUAL_IDENTIFIER_EXPANSION'
@@ -2020,6 +2111,7 @@ while true; do
   local gap_char=' ' prompt_char='❯' down_triangle='\uE0BC' up_triangle='\uE0BA' slanted_bar='\u2571'
   local left_subsep= right_subsep= left_tail= right_tail= left_head= right_head= time=
   local -i num_lines=2 empty_line=0 color=2 left_frame=1 right_frame=1 transient_prompt=0
+  local -i alt_prompt=0
   local -i cap_diamond=0 cap_python=0 cap_debian=0 cap_lock=0 cap_arrow=0
   local -a extra_icons=('' '' '')
   local -a frame_color=(244 242 240 238)
@@ -2125,10 +2217,11 @@ while true; do
   ask_ornaments_color  || continue
   ask_empty_line       || continue
   ask_extra_icons      || continue
-  ask_prefixes         || continue
+  ask_prefixes          || continue
+  ask_alt_prompt       || continue
   ask_transient_prompt || continue
   ask_instant_prompt   || continue
-  ask_config_overwrite || continue
+  ask_config_overwrite  || continue
   ask_zshrc_edit       || continue
   break
 done
