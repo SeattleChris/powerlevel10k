@@ -2217,11 +2217,11 @@ while true; do
   ask_ornaments_color  || continue
   ask_empty_line       || continue
   ask_extra_icons      || continue
-  ask_prefixes          || continue
+  ask_prefixes         || continue
   ask_alt_prompt       || continue
   ask_transient_prompt || continue
   ask_instant_prompt   || continue
-  ask_config_overwrite  || continue
+  ask_config_overwrite || continue
   ask_zshrc_edit       || continue
   break
 done
